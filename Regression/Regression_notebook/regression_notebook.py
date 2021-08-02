@@ -233,9 +233,8 @@ def remove_outliers(index,data):
 # if remove is true remove outliers else if it is false just return the index of outliers
 # this will function will be returning two datasets the original one and one in which all the outliers are removed
 
-def balance_data(data,balance:bool=True):
-  pass
-# create this function after doing some study
+# balanced data only affects the classification model since regression datasets are continous therefore it doesn;t make
+# much sense to balance data as there will be continuos values and therfore almost all the dependent values will be unique
 
 # this function will perform all the data preprocessing steps
 # incase you want to use non default algos call these function seprately
@@ -261,7 +260,84 @@ def create_heat_map(data):
 raw_data=pd.read_csv('/content/Life Expectancy Data.csv')
 create_heat_map(raw_data)
 
-# drawing plots will be much easier in direct manner therfore refer to original regression databook
+# drawing plots will be much easier in direct manner therfore refer to original regression databook 
+def SNS_distplot(feature:str,color:str='green'):
+  sns.distplot(data[feature],color=color)
+def SNS_histlpot(feature:str,shade:bool=True,color:str='blue'):
+  sns.kdeplot(data[feature],shade=shade,color=color)
+def SNS_kdeplot(feature:str,shade:bool=True,color:str='red'):
+  sns.kdeplot(data[feature],shade=shade,color=color)
+def SNS_jointplot(x:str,y:str,kind:str='kde',color:str='red'):
+  sns.jointplot(data=data,x=x,y=y,color=color,kind=kind)
+def SNS_scatterplot(x:str,y:str,color:str='blue'):
+  sns.scatterplot(data=data,x=x,y=y,color=color)
+def SNS_regPlot(x:str,y:str,color:str='magenta'):
+  sns.regplot(x=data[x],y=data[y],color=color)
+def PX_scatter(x:str,y:str,color:str,size:str,hover:str,facet_col:str,size_max:int=50):
+  px.scatter(data,x=x,y=y,color=color,size=size,size_max=size_max,hover_name=hover,
+           facet_col=facet_col)
+def PX_scatterAnimate(x:str,y:str,animation_frame:str,animation_group:str,size:str,color:str,hover:str,range_x:list,range_y:list,log_x:bool=False,size_max:int=50):
+  px.scatter(data, x=x, y=y, animation_frame=animation_frame, animation_group=animation_group,
+           size=size, color=color, hover_name=hover,
+           log_x=log_x, size_max=size_max, range_x=range_x, range_y=range_y)
+    
+def PX_chloropeth(location:str,color:str,hover:str,animation:str,projection:str):
+  px.choropleth(data,locations=location,color=color,hover_name=hover,animation_frame=animation,
+              color_continuous_scale=px.colors.sequential.Plasma,projection=projection)
+'''
+     These are all the projection options avaialble:
+     'equirectangular', 'mercator', 'orthographic', 'natural earth', 'kavrayskiy7', 'miller',
+      'robinson', 'eckert4', 'azimuthal equal area', 'azimuthal equidistant', 'conic equal area',
+       'conic conformal', 'conic equidistant', 'gnomonic', 'stereographic', 'mollweide', 'hammer',
+        'transverse mercator', 'albers usa', 'winkel tripel', 'aitoff', or 'sinusoidal'.
+'''
+  
+def PX_histogram(x:str,y:str,color:str,hover:str):
+  px.histogram(data,x=x,y=y,color=color,hover_name=hover)
+def PX_box(x:str,y:str,category:str,categories:list,color:str,orientation:str='h',notched:bool=False):
+  px.box(data,x=x,y=y,color=color,orientation=orientation,notched=notched,
+       category_orders={category:categories})
+def PX_violin(x:str,y:str,color:str,box:bool=False):
+  px.violin(data,x=x,y=y,color=color,box=box,points='all')
+def multiplot(features,type:str='dist',a:int=4,b:int=3):
+  a = 4  # number of rows
+  b = 3  # number of columns 
+  c = 1  # initialize plot counter
+  fig = plt.figure(figsize=(14,22))
+  if type == 'dist':
+    for feature in features:
+      plt.subplot(a, b, c)
+      plt.title(feature)
+      ax1=sns.distplot(data[feature],hist=False,color="red",)
+      c=c+1
+      if c > a*b:
+        break
+  elif type == 'kde':
+    for feature in features:
+      plt.subplot(a, b, c)
+      plt.title(feature)
+      ax1=sns.kdeplot(data[feature],color="red",shade=True)
+      c=c+1
+      if c > a*b:
+        break
+  elif type == 'hist':
+    for feature in features:
+      plt.subplot(a, b, c)
+      plt.title(feature)
+      ax1=sns.histplot(data[feature],kde=True,color="red",)
+      c=c+1
+      if c > a*b:
+        break
+  elif type=='box':
+    for feature in features:
+      plt.subplot(a, b, c)
+      plt.title(feature)
+      ax1=sns.boxplot(data[feature],color="red",)
+      c=c+1
+      if c > a*b:
+        break
+
+
 
 """#Prepare a descriptive table in here on how to use this function"""
 
