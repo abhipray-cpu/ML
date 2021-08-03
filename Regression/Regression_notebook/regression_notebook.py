@@ -631,7 +631,7 @@ r2_score=r2_score_models(models,x_train,y_train)
 index=[]
 for i in range(0,len(r2_score)):
   index.append(i)
-columns={'model_name','accuracies','mean_accuracy'}
+columns=['model_name','accuracies','mean_accuracy']
 data=[]
 for col in r2_score:
   model_name=col
@@ -652,10 +652,7 @@ def model_evaluation(models,x_train,y_train):
   index=[]
   for i in range(0,len(r2_score)):
     index.append(i)
-  columns=[]
-  columns.append('model')
-  for score in scoring:
-    columns.append(score)
+  columns=['Model','MAE','MSE','RMSE','R2']
   
   from sklearn.model_selection import cross_val_score
   data_score=[]
@@ -663,15 +660,16 @@ def model_evaluation(models,x_train,y_train):
     data_premature=[]
     data_premature.append(model)
     for score in scoring:
-      accuracies=cross_val_score(estimator=models[model], X = x_train, y = y_train, cv = 10,scoring=score)
+      accuracies=cross_val_score(estimator=models[model], X = x_train, y = y_train, cv = 10,scoring=score,verbose=20,n_jobs=-1)
       data_premature.append(accuracies.mean())
     data_score.append(data_premature)
   score_data=pd.DataFrame(data=data_score,index=index,columns=columns)
   return score_data
 
 score_data=model_evaluation(models,x_train,y_train)
+#word of advice modify models and include only those for which you want to know the matirces
 
-score_data=score_data.sort_values(by=["r2"],ascending=False) 
+score_data=score_data.sort_values(by=["R2"],ascending=False) 
 display(score_data)
 
 def hypertune_model(model_name:str):
@@ -735,7 +733,7 @@ def RF_param_grid():
     oob_score=[True,False]
     warm_state=[True,False]
   parameters={'criterion':criterion,'max_features':max_features,'min_samples_leaf':min_samples_leaf,'min_samples_split':min_samples_split,
-            'n_estimators':n_estimators,'bootstrap':bootstrap,'oob_score':oob_score,'warm_state':warm_state}
+            'n_estimators':n_estimators,'bootstrap':bootstrap,'oob_score':oob_score,'warm_state':warm_state,'verbos':20}
   return parameters
 
 def SVR_param_grid():
@@ -746,12 +744,13 @@ def SVR_param_grid():
   return parameters
 
 def XGB_param_grid():
-   params=[{'booster':['gblinear','gbtree','dart'],'gamma':[1e-2,1e-1,0.2,0.4,0.6,0.8,1.0,2.0,4.0,6.0,8.0,10.0,15.0,20.0],'n_jobs':[-1],
-           'importance_type':['gain','cover'],'leaning_rate':[1e-3,1e-2,1e-1,0.2,0.3,0.4,0.5],
-           'max_depth':[1,2,3,4,5,6,7,8,9,10],'min_child_weight':[1,2,4,5,3,6,7,8,9,10],'n_estimators':[100,200,300,400,500],
-           'verbosity':[2],'reg_alpha':[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],'reg_lambda':[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0]}]
   
-   return params  
+  params={'booster':['gblinear','gbtree','dart'],'gamma':[1e-2,1e-1,0.2,0.4,0.6,0.8,1.0,2.0,4.0,6.0,8.0,10.0,15.0,20.0],
+           'importance_type':['gain','cover'],'leaning_rate':[1e-3,1e-2,1e-1,0.2,0.3,0.4,0.5,0.9,1.0],
+           'max_depth':[1,2,3,4,5,6,7,8,9,10],'min_child_weight':[1,2,4,5,3,6,7,8,9,10],'n_estimators':[100,200,300,400,500],
+           'reg_alpha':[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],'reg_lambda':[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0]}
+  
+  return params  
 
 def Ridge_param_grid():
   parameters=[{'alpha':[1.0,10.0,100.0,1000.0],'solver':['auto','svd','chlosky','lsqr','sparse-cg','sag','saga'],'tol':[1e-4,1e-5,1e-3,1e-2,1e-1,0]}]
@@ -774,15 +773,63 @@ def Hubber_param_grid():
 
  # study these models first before creating the paramgird 
 def ET_param_grid():
-  pass
+  max_depth=[]
+  for i in range(0,400):
+    max_depth.append(i)
+    min_samples_split = np.linspace(0.1, 1.0, 10, endpoint=True)
+    min_samples_leaf = np.linspace(0.1, 0.5, 5, endpoint=True)
+    max_features = list(range(1,x_train.shape[1]))
+    criterion=['mse','mae','poison','friedman_mse']
+    n_estimators=np.linspace(1,100,100,endpoint=True)
+    bootstrap=[True,False]
+    oob_score=[True,False]
+    warm_start=[True,False]
+    parameters={'criterion':criterion,'max_features':max_features,'min_samples_leaf':min_samples_leaf,'min_samples_split':min_samples_split,
+            'n_estimators':n_estimators,'bootstrap':bootstrap,'oob_score':oob_score,'warm_start':warm_start}
+    return parameters
 def Bayseian_param_grid():
-  pass
+  n_iter=[300,400,500]
+  tol=[1e-3,1e-2,1e-1,1e-4]
+  compute_score=[True,False]
+  normalize=[True,False]
+  verbose=20
+  parameters={'n_iter':n_iter,'tol':tol,'compute_score':compute_score,'normalize':normalize}
+  return parameters
+
 def Light_param_grid():
-  pass
+  boosting_type=['gbdt','rf','dart','goss']
+  learning_rate=[1e-3,1e-2,1e-1,0.2,0.3,0.4,0.5,0.9,1.0]
+  max_depth=[1,2,3,4,5,6,7,8,9,10]
+  min_child_weight=[1,2,4,5,3,6,7,8,9,10]
+  n_estimators=[100,200,300,400,500]
+  reg_alpha=[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
+  reg_lambda=[1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0]
+  silent=[True,False]
+  objective=['regression','regression_l1','regression_hubber','regression_fair','regression_poisson','resgression_mape','regression_gamma',
+           'regression_tweedie','regression_mse','regression_rmse']
+  parameters={'boosting_type':boosting_type,'learning_rate':learning_rate,'max_depth':max_depth,
+            'min_child_weight':min_child_weight,'n_estimators':n_estimators,'reg-alpha':reg_alpha,
+            'reg_lambda':reg_lambda,
+            'silent':silent,'objective':objective}
+  return parameters
 def gradient_param_grid():
-  pass
+  learning_rate=[1e-3,1e-2,1e-1,0.2,0.3,0.4,0.5,0.9,1.0]
+  max_depth=[1,2,3,4,5,6,7,8,9,10]
+  alpha=[0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
+  n_estimators=[100,200,300,400,500]
+  tol=[1e-3,1e-2,1e-1,1e-4]
+  parameters={'learning_rate':learning_rate,'max_depth':max_depth,'alpha':alpha,'n_estimators':n_estimators,'tol':tol,
+            'warm_start':[True,False]}
+  return parameters
 def adaboost_param_grid():
-  pass
+  n_estimators=[50,100,200,300,400,500]
+  learning_rate=[1e-3,1e-2,1e-1,0.2,0.3,0.4,0.5,0.9,1.0]
+  loss=['linear', 'square', 'exponential']
+  parameters={'n_estimators':n_estimators,'learning_rate':learning_rate,
+            'loss':loss}
+  return parameters
+
+hypertune_model('Light')
 
 def quantile_regression(quantile1:float=0.1,quantile2:float=0.5,quantile3:float=0.9,loss_plot:bool=False,prediction_plot:bool=True,hypertune:bool=False):
   from lightgbm import LGBMRegressor
