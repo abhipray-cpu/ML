@@ -1,0 +1,12 @@
+.DS_Store
+node_modules
+/images/
+/public/images/
+/public/videos/
+
+*.log
+*.png
+*.jpg
+*.jpeg
+*.mp3
+*.mp4
